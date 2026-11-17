@@ -1,51 +1,41 @@
 {% set name = "metator" %}
-{% set version = "1.3.10" %}
+{% set version = "1.4.0" %}
 
 package:
   name: {{ name|lower }}
   version: {{ version }}
 
 source:
-  url: https://github.com/koszullab/metator/archive/v{{ version }}.tar.gz
-  sha256: f7665edc1a597a8a83259882cdc71020df8c7aebf4d87af2182150c5a8333231
+  url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
+  sha256: c58e9fb55efb42c67eb68fde9b357171f1b3f7e049153256c142bdac33d63e72
 
 build:
-  number: 1
+  number: 0
+  noarch: python
+  script: {{ PYTHON }} -m pip install . --no-deps --no-build-isolation --no-cache-dir -vvv
+  entry_points:
+    - metator = metator.cli:cli
   run_exports:
     - {{ pin_subpackage("metator", max_pin="x") }}
-  entry_points:
-    - metator = metator.main:main
-  script:
-    - sed -i.bak 's/^CXX=g++/CXX=${CXX}/g' external/setup_dependencies.sh
-    - "{{ PYTHON }} -m pip install . --no-deps --no-build-isolation --no-cache-dir -vvv"
-  skip: True  # [py < 39 or py > 311]
 
 requirements:
-  build:
-    - {{ compiler('cxx') }}
-    - make
   host:
-    - python
-    - hatch
-    - hatch-build-scripts
+    - python >=3.10
     - pip
-    - tar
+    - hatchling
   run:
-    - python
-    - hicstuff
-    - networkx
-    - checkv
-    - biopython <=1.80
+    - python >=3.10
+    - hicstuff >=3.3.0
+    - metacooler >=0.2.0
+    - python-igraph >=0.10.3
+    - biopython >=1.80
     - pysam
-    - pairtools
     - pyfastx
-    - cooler
     - numpy
     - pandas
-    - scikit-learn
     - scipy
-    - seaborn-base
-    - looseversion
+    - matplotlib-base >=3.9
+    - rich-click >=1.9
     - micomplete
     - pairix
     - bowtie2
@@ -53,17 +43,16 @@ requirements:
     - samtools
     - prodigal
     - hmmer
-    - openjdk
+    - coreutils
 
 test:
   imports:
     - metator
   commands:
     - metator --help
-    #- ls -l $(python -c "from metator import LOUVAIN_PATH; print(LOUVAIN_PATH)")
-    #- $(python -c "from metator import LOUVAIN_PATH; print(LOUVAIN_PATH)")/louvain -h
-    #- ls -l  $(python -c "from metator import LEIDEN_PATH; print(LEIDEN_PATH)")
-    #- java -cp $(python -c "from metator import LEIDEN_PATH; print(LEIDEN_PATH)") -h
+    - pip check
+  requires:
+    - pip
 
 about:
   home: "https://github.com/koszullab/metator"
